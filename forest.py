@@ -636,21 +636,29 @@ def send_discord_order_message(action, ticker, price, predicted_price, extra_inf
         f"Price: {price:.2f}\nPredicted: {predicted_price:.2f}\n{extra_info}"
     )
 
+    logging.info("send_discord_order_message called")
+
     if DISCORD_MODE == "on" and DISCORD_CHANNEL_ID:
         async def send_prediction_message():
             try:
+                # Make sure channel ID is valid and bot is connected
                 channel = discord_client.get_channel(int(DISCORD_CHANNEL_ID))
                 if channel:
                     await channel.send(message)
-                    logging.info(f"Sent message for {ticker} to channel")
+                    logging.info(f"✅ Sent message for {ticker} to channel.")
                 else:
-                    logging.error("Channel not found or bot has no access.")
+                    logging.error("❌ Channel not found or bot has no access.")
             except Exception as e:
-                logging.error(f"Failed to send Discord message: {e}")
+                logging.error(f"❌ Failed to send Discord message: {e}")
 
-        discord_client.loop.create_task(send_prediction_message())
+        try:
+            # Run task properly on the event loop
+            discord_client.loop.create_task(send_prediction_message())
+        except Exception as e:
+            logging.error(f"❌ Failed to create Discord task: {e}")
     else:
-        logging.info("DISCORD_MODE is on or DISCORD_CHANNEL_ID is set.")
+        logging.warning("⚠️ DISCORD_MODE is off or DISCORD_CHANNEL_ID is not set.")
+
 
 def buy_shares(ticker, qty, buy_price, predicted_price):
     if qty <= 0:
