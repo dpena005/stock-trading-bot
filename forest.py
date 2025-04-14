@@ -1158,7 +1158,7 @@ def console_listener():
                 current_price = float(df.iloc[-1]['close'])
                 logging.info(f"[{ticker}] Current Price={current_price:.2f}, Predicted Next Close={pred_close:.2f}")
 
-        elif cmd == "predict-next":
+elif cmd == "predict-next":
     for ticker in TICKERS:
         tf_code = timeframe_to_code(BAR_TIMEFRAME)
         csv_filename = f"{ticker}_{tf_code}.csv"
@@ -1189,9 +1189,17 @@ def console_listener():
         df.dropna(inplace=True)
         logging.info(f"Training model with {len(df)} rows and {len(df.columns)-1} features (others are disabled).")
         logging.info(f"Using Random Forest model as per ML_MODEL configuration.")
-        model = train_model(df)  # Adjust based on actual function name
+        
+        # Train the model (adjust function name if different)
+        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        X = df.drop(columns=['target'])
+        y = df['target']
+        model.fit(X, y)
+        
+        # Predict the next close
         current_price = df['close'].iloc[-1]
-        predicted_price = predict_next(model, df)  # Adjust based on actual function name
+        last_row = df.drop(columns=['target']).iloc[-1].values.reshape(1, -1)
+        predicted_price = model.predict(last_row)[0]
         logging.info(f"[{ticker}] Current Price={current_price}, Predicted Next Close={predicted_price}")
 
         # DM logic with debug logging
