@@ -633,14 +633,16 @@ def send_discord_order_message(action, ticker, price, predicted_price, extra_inf
     message = (f"Order Action: {action}\nTicker: {ticker}\n"
                f"Price: {price:.2f}\nPredicted: {predicted_price:.2f}\n{extra_info}")
     if DISCORD_MODE == "on" and DISCORD_USER_ID:
-        async def discord_send_dm():
-            try:
-                user = await discord_client.fetch_user(int(DISCORD_USER_ID))
-                await user.send(message)
-                logging.info(f"Sent Discord DM for {ticker} order: {action}")
-            except Exception as e:
-                logging.error(f"Discord DM failed: {e}")
-        discord_client.loop.create_task(discord_send_dm())
+    async def send_prediction_dm():
+        try:
+            logging.info(f"Attempting to send DM to user ID: {DISCORD_USER_ID}")
+            user = await discord_client.fetch_user(int(DISCORD_USER_ID))
+            await user.send(f"[{ticker}] Current Price={current_price}, Predicted Next Close={predicted_price}")
+            logging.info(f"Sent Discord DM for {ticker} prediction")
+        except Exception as e:
+            logging.error(f"Discord DM failed: {e}")
+            discord_client.loop.create_task(send_prediction_dm())
+    discord_client.loop.create_task(send_prediction_dm())
     else:
         logging.info("Discord mode is off or DISCORD_USER_ID not set.")
 
