@@ -1158,6 +1158,56 @@ def console_listener():
                 current_price = float(df.iloc[-1]['close'])
                 logging.info(f"[{ticker}] Current Price={current_price:.2f}, Predicted Next Close={pred_close:.2f}")
 
+        elif cmd == "predict-next":
+    for ticker in TICKERS:
+        tf_code = timeframe_to_code(BAR_TIMEFRAME)
+        csv_filename = f"{ticker}_{tf_code}.csv"
+        if skip_data:
+            logging.info(f"[{ticker}] predict-next -r: Using existing CSV {csv_filename}")
+            if not os.path.exists(csv_filename):
+                logging.error(f"[{ticker}] CSV does not exist, skipping.")
+                continue
+            df = pd.read_csv(csv_filename)
+            if df.empty:
+                logging.error(f"[{ticker}] CSV is empty, skipping.")
+                continue
+        else:
+            df = fetch_candles(ticker, bars=N_BARS, timeframe=BAR_TIMEFRAME)
+            if df.empty:
+                logging.error(f"[{ticker}] Empty data, skipping predict-next.")
+                continue
+            df = add_features(df)
+            df = compute_custom_features(df)
+            df = drop_disabled_features(df)
+
+            df.to_csv(csv_filename, index=False)
+            logging.info(f"[{ticker}] Fetched new data + advanced features (minus disabled), saved to {csv_filename}")
+
+        # Model training and prediction
+        df = add_features(df)
+        df['target'] = df['close'].shift(-1)
+        df.dropna(inplace=True)
+        logging.info(f"Training model with {len(df)} rows and {len(df.columns)-1} features (others are disabled).")
+        logging.info(f"Using Random Forest model as per ML_MODEL configuration.")
+        model = train_model(df)  # Adjust based on actual function name
+        current_price = df['close'].iloc[-1]
+        predicted_price = predict_next(model, df)  # Adjust based on actual function name
+        logging.info(f"[{ticker}] Current Price={current_price}, Predicted Next Close={predicted_price}")
+
+        # DM logic with debug logging
+        logging.info(f"DISCORD_MODE={DISCORD_MODE}, DISCORD_USER_ID={DISCORD_USER_ID}")
+        if DISCORD_MODE == "on" and DISCORD_USER_ID:
+            async def send_prediction_dm():
+                try:
+                    logging.info(f"Attempting to send DM to user ID: {DISCORD_USER_ID}")
+                    user = await discord_client.fetch_user(int(DISCORD_USER_ID))
+                    await user.send(f"[{ticker}] Current Price={current_price}, Predicted Next Close={predicted_price}")
+                    logging.info(f"Sent Discord DM for {ticker} prediction")
+                except Exception as e:
+                    logging.error(f"Discord DM failed: {e}")
+                    discord_client.loop.create_task(send_prediction_dm())
+            discord_client.loop.create_task(send_prediction_dm())
+
         elif cmd == "run-sentiment":
             logging.info("Running sentiment update job...")
             run_sentiment_job(skip_data=skip_data)
