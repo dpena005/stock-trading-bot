@@ -56,7 +56,9 @@ NEWS_MODE = os.getenv("NEWS_MODE", "on").lower().strip()
 
 if DISCORD_MODE == "on":
 
-    discord_client = discord.Client()
+    intents = discord.Intents.default()
+    intents.message_content = True
+    discord_client = discord.Client(intents=intents)
 
     @discord_client.event
     async def on_ready():
