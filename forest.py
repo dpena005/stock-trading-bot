@@ -1158,7 +1158,7 @@ def console_listener():
                 current_price = float(df.iloc[-1]['close'])
                 logging.info(f"[{ticker}] Current Price={current_price:.2f}, Predicted Next Close={pred_close:.2f}")
 
-elif cmd == "predict-next":
+        eelif cmd == "predict-next":
     for ticker in TICKERS:
         tf_code = timeframe_to_code(BAR_TIMEFRAME)
         csv_filename = f"{ticker}_{tf_code}.csv"
@@ -1182,6 +1182,7 @@ elif cmd == "predict-next":
 
             df.to_csv(csv_filename, index=False)
             logging.info(f"[{ticker}] Fetched new data + advanced features (minus disabled), saved to {csv_filename}")
+
 
         # Model training and prediction
         df = add_features(df)
