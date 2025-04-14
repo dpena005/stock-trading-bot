@@ -37,6 +37,7 @@ API_BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
 DISCORD_MODE = os.getenv("DISCORD_MODE", "off").lower().strip()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "")
 DISCORD_USER_ID = os.getenv("DISCORD_USER_ID", "")
+DISCORD_CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID","")
 
 BING_API_KEY = os.getenv("BING_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -649,7 +650,7 @@ def send_discord_order_message(action, ticker, price, predicted_price, extra_inf
 
         discord_client.loop.create_task(send_prediction_message())
     else:
-        logging.info("DISCORD_MODE is off or DISCORD_CHANNEL_ID not set.")
+        logging.info("DISCORD_MODE is on or DISCORD_CHANNEL_ID is set.")
 
 def buy_shares(ticker, qty, buy_price, predicted_price):
     if qty <= 0:
