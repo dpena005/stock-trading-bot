@@ -1160,18 +1160,18 @@ def console_listener():
 
         elif cmd == "predict-next":
             for ticker in TICKERS:
-                tf_code = timeframe_to_code(BAR_TIMEFRAME)
-                csv_filename = f"{ticker}_{tf_code}.csv"
-                if skip_data:
-                    logging.info(f"[{ticker}] predict-next -r: Using existing CSV {csv_filename}")
-                    if not os.path.exists(csv_filename):
-                    logging.error(f"[{ticker}] CSV does not exist, skipping.")
-                    continue
-                df = pd.read_csv(csv_filename)
-                if df.empty:
-                    logging.error(f"[{ticker}] CSV is empty, skipping.")
-                    continue
-            else:
+            tf_code = timeframe_to_code(BAR_TIMEFRAME)
+            csv_filename = f"{ticker}_{tf_code}.csv"
+            if skip_data:
+            logging.info(f"[{ticker}] predict-next -r: Using existing CSV {csv_filename}")
+            if not os.path.exists(csv_filename):
+                logging.error(f"[{ticker}] CSV does not exist, skipping.")
+                continue
+            df = pd.read_csv(csv_filename)
+            if df.empty:
+                logging.error(f"[{ticker}] CSV is empty, skipping.")
+                continue
+        else:
             df = fetch_candles(ticker, bars=N_BARS, timeframe=BAR_TIMEFRAME)
             if df.empty:
                 logging.error(f"[{ticker}] Empty data, skipping predict-next.")
@@ -1182,7 +1182,6 @@ def console_listener():
 
             df.to_csv(csv_filename, index=False)
             logging.info(f"[{ticker}] Fetched new data + advanced features (minus disabled), saved to {csv_filename}")
-
 
         # Model training and prediction
         df = add_features(df)
